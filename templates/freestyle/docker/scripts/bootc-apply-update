@@ -1,0 +1,53 @@
+#!/bin/bash
+set -e
+
+BOOTC_IMAGE=${1}
+if [ -z "${BOOTC_IMAGE}" ]; then
+    echo 'Provide a container image'
+    exit 1
+fi
+
+echo "Applying image: ${BOOTC_IMAGE}"
+
+
+# use sshpass in ci and set SSH_PASSWORD env var to "password"
+sshcmd() {
+  sshpass -p "$SSH_PASSWORD" \
+  ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+  -p 2222 root@localhost \
+  $@
+}
+
+
+# use sshpass in ci and set SSH_PASSWORD env var to "password"
+scpcmd() {
+  sshpass -p "$SSH_PASSWORD"
+  scp \
+  -o StrictHostKeyChecking=no \
+  -o UserKnownHostsFile=/dev/null \
+  -P 2222 \
+  $@
+}
+
+# check os info
+sshcmd 'cat /etc/os-release'
+
+# apply update from image
+# image needs to be available in a public container registry
+sshcmd "bootc switch --apply  ${BOOTC_IMAGE}" || true
+
+# wait for the machine to come back up and accept ssh connections
+MAX_RETRIES=30
+retry=0
+until sshcmd 'true'; do
+  retry=$((retry + 1))
+  if [ "${retry}" -ge "${MAX_RETRIES}" ]; then
+    echo "Machine not ready after ${MAX_RETRIES} attempts"
+    exit 1
+  fi
+  echo "Waiting for ssh to be ready (attempt ${retry}/${MAX_RETRIES})..."
+  sleep 5
+done
+
+sshcmd 'bootc status'
+sshcmd '/usr/bin/hello'
