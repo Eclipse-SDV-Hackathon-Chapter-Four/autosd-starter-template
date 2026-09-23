@@ -1,0 +1,6 @@
+{
+    "name": "eclipse-autosd-bootc-qemu",
+    "image": "ghcr.io/eclipse-autosd/eclipse-autosd-bootc-qemu:latest",
+    "workspaceMount": "source=${localWorkspaceFolder}/src,target=/workspace/src/,type=bind",
+    "workspaceFolder": "/workspace/src/"
+}
