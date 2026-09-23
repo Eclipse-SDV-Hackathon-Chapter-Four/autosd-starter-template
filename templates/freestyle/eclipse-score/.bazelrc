@@ -1,0 +1,47 @@
+common --registry=https://raw.githubusercontent.com/eclipse-score/bazel_registry/refs/heads/main/
+common --registry=https://bcr.bazel.build
+
+build --java_language_version=17
+build --tool_java_language_version=17
+build --java_runtime_version=remotejdk_17
+build --tool_java_runtime_version=remotejdk_17
+
+# Common
+## Baselibs
+build:_common --@score_baselibs//score/json:base_library=nlohmann
+build:_common --@score_baselibs//score/log_rust:safety_level=qm
+build:_common --@score_baselibs//score/analysis/tracing/generic_trace_library:implementation=@score_baselibs//score/analysis/tracing/generic_trace_library/stub_implementation
+## Logging
+build:_common --@score_logging//score/datarouter/build_configuration_flags:use_local_vlan=True
+## Communication
+build:_common --@score_communication//score/memory/shared/flags:use_typedshmd=False
+#build:_common --extra_toolchains=//bazel:libclang_toolchain
+#build:_common --@score_config_management//score/config_management/config_daemon/code:score_variant=true
+
+# Flags needed by datarouter
+# build:_common --@score_logging//score/datarouter/build_configuration_flags:persistent_logging=False
+# build:_common --@score_logging//score/datarouter/build_configuration_flags:persistent_config_feature_enabled=False
+# build:_common --@score_logging//score/datarouter/build_configuration_flags:enable_nonverbose_dlt=False
+# build:_common --@score_logging//score/datarouter/build_configuration_flags:enable_dynamic_configuration=False
+# build:_common --@score_logging//score/datarouter/build_configuration_flags:file_transfer=False
+# build:_common --@score_logging//score/datarouter/build_configuration_flags:use_local_vlan=True
+# build:_common --@score_logging//score/datarouter/build_configuration_flags:dlt_output_enable=True
+
+
+# AutoSD
+## x86_64 (native)
+build:score-autosd-x86_64 --config=_common
+build:score-autosd-x86_64 --force_pic
+build:score-autosd-x86_64 --platforms=@score_bazel_platforms//:x86_64-linux-autosd10
+build:score-autosd-x86_64 --extra_toolchains=@score_autosd10_x86_64_toolchain//:x86_64-linux-autosd10
+build:score-autosd-x86_64 --extra_toolchains=@score_toolchains_rust//toolchains/ferrocene:ferrocene_x86_64_unknown_linux_gnu
+build:score-autosd-x86_64 --extra_toolchains=@score_toolchains_rust//toolchains/ferrocene:ferrocene_x86_64_unknown_linux_gnu_miri
+## aarch64 (native)
+build:score-autosd-aarch64 --config=_common
+build:score-autosd-aarch64 --force_pic
+build:score-autosd-aarch64 --platforms=@score_bazel_platforms//:aarch64-linux-autosd10
+build:score-autosd-aarch64 --extra_toolchains=@score_autosd10_aarch64_toolchain//:aarch64-linux-autosd10
+build:score-autosd-aarch64 --extra_toolchains=@score_toolchains_rust//toolchains/ferrocene:ferrocene_aarch64_unknown_linux_gnu
+build:score-autosd-aarch64 --extra_toolchains=@score_toolchains_rust//toolchains/ferrocene:ferrocene_aarch64_unknown_linux_gnu_miri
+
+try-import %workspace%/user.bazelrc
