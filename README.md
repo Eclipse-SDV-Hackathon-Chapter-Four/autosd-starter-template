@@ -18,20 +18,52 @@ Check the desired template folder for detailed instuctions to use each respectiv
 │       ├── exporters: jumpstarer exporters
 │       │   └── qemu.yml: jumpstarter exportet config to easily test apps with QEMU
 └── templates: templates folder
-    ├── challenges: starting point each specific hackathon challenge 
-    │   ├── doctor-whodunit: starting point to build and run doctor-whodunit challenge in AutoSD
-    │   └── hack-to-the-future: starting point to build and run hack-to-the-future challenge in AutoSD
     └── freestyle: basic generic templates
         ├── bazel: base template to use AutoSD with Bazel
         ├── docker: base template for docker/podman (includes docker/podman machine and compose)
         └── eclipse-score: base template to build and run Eclipse S-CORE components in AutoSD
 ```
 
-
 ## What is AutoSD
 
 AutoSD is the upstream binary Linux distribution that serves as the public, in-development preview of Red Hat In-Vehicle Operating System (RHIVOS).
 Built on CentOS Stream with automotive-specific optimizations, AutoSD enables mixed-criticality workloads for modern Software-Defined Vehicles.
+
+Container images can be used to test/run applications or workloads,
+base images can be found at: https://github.com/orgs/eclipse-autosd/packages?repo_name=eclipse-autosd.
+
+Images are split per platform or target, so `eclipse-autosd-bootc-$target`. You can rely on the qemu ones for development and switch to "ebbr" targets
+to test it in boards available via jumpstarter. Disk images can be found at https://download.eclipse.org/autosd/disk-images/.
+
+A more detailed integration workflow can be found at: https://github.com/eclipse-autosd/eclipse-autosd.
+
+### Workloads
+
+Workloads in AutoSD are defined using Systemd, which also supports containerized workloads using podman and quadlets: https://docs.podman.io/en/latest/markdown/podman-systemd.unit.5.html.
+
+The following file is an example of how to run Eclipse Kuksa Databroker using quadlet:
+
+``` 
+[Unit]
+Description=kuksa-databroker
+WantedBy=default.target
+
+[Container]
+ContainerName=kuksa-databroker
+Image=ghcr.io/eclipse-kuksa/kuksa-databroker:0.7.1
+Network=host
+HostName=kuksa-databroker
+PublishPort=55556:55556
+PublishPort=55555:55555
+Environment=KUKSA_DATABROKER_PORT=55556
+Environment=KUKSA_DATA_BROKER_ADDR=0.0.0.0
+
+[Install]
+WantedBy=multi-user.target default.target
+```
+
+Saving that file in `/etc/containers/systemd/kuksa-databroker.container`, will result in a Systemd service that will run Kuksa Databroker in a container
+using podman.
 
 ## Jumpstarter (Device Testing)
 
@@ -54,21 +86,13 @@ This section gives an overview of each available template.
 
 Detailed instructions are available in each template folder, respecively.
 
-### Hackathon Challenges
-
-Location: [./templates/challenges](./templates/challenges)
-
-These templates provides a starting poing to work on the proposed hackathon challenges with AutoSD.
-
-* [Hack to the Furue](./templates/challenges/hack-to-the-future)
-* [Doctor Whodunit!!!](./templates/challenges/doctor-whodunit)
-
 ### Freestyle Templates
 
 This section contains instructions for base templates that are challenge neutral for "freestyle" projects.
 
-* [Docker](./templates/freestyle/docker) 
 * [Bazel](./templates/freestyle/bazel)
+* [Devcontainer](./teamplates/freestyle/devcontainer)
+* [Docker](./templates/freestyle/docker) 
 * [Eclipse S-CORE](./templates/freestyle/eclipse-score)
 
 ## License
