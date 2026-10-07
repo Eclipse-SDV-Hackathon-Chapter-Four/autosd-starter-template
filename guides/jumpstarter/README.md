@@ -76,7 +76,7 @@ The devices in question are:
 * Renesas R-Car S4
 * Texas Instruments J784S4 EVM (j784s4evm)
 
-There are 6 of each board available.
+There are 8 of each board available.
 
 ### Cluster Access
 
